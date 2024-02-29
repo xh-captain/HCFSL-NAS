@@ -26,7 +26,7 @@ from matplotlib.colors import ListedColormap
 import time
 import utils
 # import models
-# import spectral
+# import spectral dataset
 import logging
 import sys
 from torchsummary import summary
@@ -77,7 +77,7 @@ fh = logging.FileHandler('./result/search.txt')  #paviaU
 fh.setFormatter(logging.Formatter(log_format))
 logging.getLogger().addHandler(fh)
 os.environ["OMP_NUM_THREADS"] = "1"
-os.environ['CUDA_VISIBLE_DEVICES'] = '4'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 # dataname='PU' gpu
 
 # Hyper Parameters
@@ -113,13 +113,12 @@ with open(os.path.join('datasets',  'Chikusei_imdb_128.pickle'), 'rb') as handle
 logging.info(source_imdb.keys())
 logging.info(source_imdb['Labels'])
 
-# process source domain data set  ---CK-data set 2517*2335*128  19类  77592个样本
-data_train = source_imdb['data'] # (77592, 9, 9, 128)
-labels_train = source_imdb['Labels'] # 77592
+data_train = source_imdb['data']  
+labels_train = source_imdb['Labels']  
 logging.info(data_train.shape)
 logging.info(labels_train.shape)
-keys_all_train = sorted(list(set(labels_train)))  # class [0,...,18] batch
-logging.info(keys_all_train) # [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+keys_all_train = sorted(list(set(labels_train)))   
+logging.info(keys_all_train)  
 label_encoder_train = {}  
 for i in range(len(keys_all_train)):
     label_encoder_train[keys_all_train[i]] = i
@@ -143,7 +142,7 @@ logging.info("Num classes of the number of class larger than 200: " + str(len(da
 
 for class_ in data:
     for i in range(len(data[class_])):
-        image_transpose = np.transpose(data[class_][i], (2, 0, 1))  # （9,9,100）-> (100,9,9)
+        image_transpose = np.transpose(data[class_][i], (2, 0, 1))  
         data[class_][i] = image_transpose
 
 # source few-shot classification data
@@ -152,15 +151,22 @@ logging.info(len(metatrain_data.keys()), metatrain_data.keys())
 del data
 
 # source domain adaptation data
-logging.info(source_imdb['data'].shape) # (77592, 9, 9, 100) size
-source_imdb['data'] = source_imdb['data'].transpose((1, 2, 3, 0)) #(9, 9, 100, 77592)
-logging.info(source_imdb['data'].shape) # (77592, 9, 9, 100)
+logging.info(source_imdb['data'].shape)  
+source_imdb['data'] = source_imdb['data'].transpose((1, 2, 3, 0))  
+logging.info(source_imdb['data'].shape)  
 logging.info(source_imdb['Labels'])
 source_dataset = utils.matcifar(source_imdb, train=True, d=3, medicinal=0)
 source_loader = torch.utils.data.DataLoader(source_dataset, batch_size=32, shuffle=True, num_workers=0)
 del source_dataset, source_imdb
+
+
+
 crossEntropy = nn.CrossEntropyLoss().cuda()
 adaploss = AdaSPLoss(temp = args.tempsum, loss_type = 'adasp') 
+
+
+
+
 class Mapping(nn.Module):
     def __init__(self, in_dimension, out_dimension):
         super(Mapping, self).__init__()
@@ -203,13 +209,10 @@ A = np.zeros([nDataSet, CLASS_NUM])
 k = np.zeros([nDataSet, 1])
 best_predict_all = []
 best_acc_all = 0.0
-# best_G,best_RandPerm,best_Row, best_Column,best_nTrain = None,None,None,None,None
 
 seeds = args.seeds
 for iDataSet in range(nDataSet):
     np.random.seed(seeds)
-    # train_loader, test_loader, target_da_metatrain_data, target_loader,G,RandPerm,Row, Column,nTrain = get_target_dataset(
-    #     Data_Band_Scaler=Data_Band_Scaler, GroundTruth=GroundTruth,class_num=TEST_CLASS_NUM, shot_num_per_class=TEST_LSAMPLE_NUM_PER_CLASS)
     
     metatrain_folders, metatest_folders = tg.mini_imagenet_folders()
 
