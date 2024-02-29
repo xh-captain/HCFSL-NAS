@@ -126,14 +126,12 @@ class Network(nn.Module):
 
   def forward(self, input,domain='mini'): #mini
     if domain == 'target':
-        input = self.target_mapping(input)  # (45, 100,9,9)  把光谱维度统一
+        input = self.target_mapping(input)   
     elif domain == 'ck':
-        input = self.source_mapping(input)  # (45, 100,9,9)
+        input = self.source_mapping(input)  
     elif domain == 'mini':
-        input = self.mini_mapping(input)  # (45, 100,9,9)
+        input = self.mini_mapping(input)  
     s0 = s1 = input
-    # print('模型输入进行spectral pooling后的大小')
-    # print(input.shape)
     for i, cell in enumerate(self.cells):
       if cell.reduction:
         weights = F.softmax(self.alphas_reduce,dim=-1)
@@ -147,9 +145,9 @@ class Network(nn.Module):
   def _loss(self, input, target,target_lable):
     input = self(input)
     target = self(target) #171*128
-    distance = euclidean_metric(target,input)  #欧氏距离
-    loss1 = self._criterion(distance, target_lable.cuda())  #171*9  171adaploss
-    loss2 = self._adaploss(distance, target_lable.cuda())  #171*9  171 adaploss
+    distance = euclidean_metric(target,input)  
+    loss1 = self._criterion(distance, target_lable.cuda())   
+    loss2 = self._adaploss(distance, target_lable.cuda())   
     loss = loss1 + loss2
     loss=torch.unsqueeze(loss,0)
     return loss 
