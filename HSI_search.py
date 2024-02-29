@@ -159,7 +159,8 @@ logging.info(source_imdb['Labels'])
 source_dataset = utils.matcifar(source_imdb, train=True, d=3, medicinal=0)
 source_loader = torch.utils.data.DataLoader(source_dataset, batch_size=32, shuffle=True, num_workers=0)
 del source_dataset, source_imdb
-
+crossEntropy = nn.CrossEntropyLoss().cuda()
+adaploss = AdaSPLoss(temp = args.tempsum, loss_type = 'adasp') 
 class Mapping(nn.Module):
     def __init__(self, in_dimension, out_dimension):
         super(Mapping, self).__init__()
